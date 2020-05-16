@@ -1,0 +1,4 @@
+from hyperlpr import pipline as pp
+img = cv2.imread(image)
+    img, res = pp.SimpleRecognizePlate(img)
+    print(res)
