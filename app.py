@@ -18,6 +18,7 @@ from config import *
 # config.gpu_options.allow_growth = True
 
 class App(QMainWindow,Ui_mainWindow):
+    #用来设置显示的主页面
     def __init__(self):
         super(App,self).__init__()
         self.setupUi(self)
@@ -31,7 +32,7 @@ class App(QMainWindow,Ui_mainWindow):
         self.time_code = None
         self.show_label = names
 
-        #button function
+        #button function 设置按钮功能
         self.pushButton_selectArea.clicked.connect(self.select_area)
         self.pushButton_openVideo.clicked.connect(self.open_video)
         self.pushButton_start.clicked.connect(self.start_count)
@@ -43,23 +44,23 @@ class App(QMainWindow,Ui_mainWindow):
         self.pushButton_start.setEnabled(False)
         self.pushButton_pause.setEnabled(False)
 
-        #some flags
+        #some flags 设置一些标志信息
         self.running_flag = 0
         self.pause_flag = 0
         self.counter_thread_start_flag = 0
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  #这里设置跑的设备
 
-
+        #设置数据配置路径，权重路径。模板定义路径
         data_config = "config/coco.data"
         weights_path = "weights/yolov3.weights"
         model_def = "config/yolov3.cfg"
         data_config = parse_data_config(data_config)
-        self.yolo_class_names = load_classes(data_config["names"])
+        self.yolo_class_names = load_classes(data_config["names"])   #设置不同分类的命名
 
         # Initiate model
         print("Loading model ...")
-        self.yolo_model = Darknet(model_def).to(self.device)
+        self.yolo_model = Darknet(model_def).to(self.device)   #这里调用的是基于darknet框架的Yolo算法
         if weights_path.endswith(".weights"):
             # Load darknet weights
             self.yolo_model.load_darknet_weights(weights_path)
@@ -68,7 +69,7 @@ class App(QMainWindow,Ui_mainWindow):
             self.yolo_model.load_state_dict(torch.load(weights_path))
 
 
-        # counter Thread
+        # counter Thread   计算车辆数量的线程
         self.counterThread = CounterThread(self.yolo_model,self.yolo_class_names,self.device)
         self.counterThread.sin_counterResult.connect(self.show_image_label)
         self.counterThread.sin_done.connect(self.done)
@@ -77,7 +78,7 @@ class App(QMainWindow,Ui_mainWindow):
 
 
     def open_video(self):
-        openfile_name = QFileDialog.getOpenFileName(self,'Open video','','Video files(*.avi , *.mp4)')  #设置选取视频的类型
+        openfile_name = QFileDialog.getOpenFileName(self,'打开视频','','Video files(*.avi , *.mp4)')  #设置选取视频的类型
         self.videoList = [openfile_name[0]]
 
         # opendir_name = QFileDialog.getExistingDirectory(self, "Open dir", "./")
@@ -97,11 +98,11 @@ class App(QMainWindow,Ui_mainWindow):
                 self.imgScale = np.array(frame.shape[:2]) / [self.label_image_size[1], self.label_image_size[0]]
                 vid.release()
                 break
-
+        #设置按钮
         self.pushButton_selectArea.setEnabled(True)
-        self.pushButton_start.setText("Start")
+        self.pushButton_start.setText("开始")
         self.pushButton_start.setEnabled(False)
-        self.pushButton_pause.setText("Pause")
+        self.pushButton_pause.setText("暂停")
         self.pushButton_pause.setEnabled(False)
 
         #clear counting results
@@ -117,7 +118,7 @@ class App(QMainWindow,Ui_mainWindow):
             self.countArea.append([int(x*self.imgScale[1]),int(y*self.imgScale[0])])
             exampleImageWithArea = copy.deepcopy(self.exampleImage)
             for point in self.countArea:
-                exampleImageWithArea[point[1]-10:point[1]+10,point[0]-10:point[0]+10] = (0,255,255)
+                exampleImageWithArea[point[1]-10:point[1]+10,point[0]-10:point[0]+10] = (0,255,255) #设置区域颜色
             cv2.fillConvexPoly(exampleImageWithArea, np.array(self.countArea), (0,0,255))
             self.show_image_label(exampleImageWithArea)
         print(self.countArea)
@@ -133,14 +134,14 @@ class App(QMainWindow,Ui_mainWindow):
                 self.show_image_label(frame)
 
         if not self.get_points_flag:
-            self.pushButton_selectArea.setText("Submit Area")
+            self.pushButton_selectArea.setText("提交区域")
             self.get_points_flag = 1
             self.countArea = []
             self.pushButton_openVideo.setEnabled(False)
             self.pushButton_start.setEnabled(False)
 
         else:
-            self.pushButton_selectArea.setText("Select Area")
+            self.pushButton_selectArea.setText("选择区域")
             self.get_points_flag = 0
             exampleImage = copy.deepcopy(self.exampleImage)
             # painting area
@@ -175,7 +176,7 @@ class App(QMainWindow,Ui_mainWindow):
             #start
             self.running_flag = 1
             self.pause_flag = 0
-            self.pushButton_start.setText("Stop")
+            self.pushButton_start.setText("停止")
             self.pushButton_openVideo.setEnabled(False)
             self.pushButton_selectArea.setEnabled(False)
             #emit new parameter to counter thread
@@ -194,7 +195,7 @@ class App(QMainWindow,Ui_mainWindow):
             self.counterThread.sin_runningFlag.emit(self.running_flag)
             self.pushButton_openVideo.setEnabled(True)
             self.pushButton_selectArea.setEnabled(True)
-            self.pushButton_start.setText("Start")
+            self.pushButton_start.setText("开始")
 
 
 
@@ -202,7 +203,7 @@ class App(QMainWindow,Ui_mainWindow):
         if sin == 1:
             self.pushButton_openVideo.setEnabled(True)
             self.pushButton_start.setEnabled(False)
-            self.pushButton_start.setText("Start")
+            self.pushButton_start.setText("开始")
 
 
     def update_counter_results(self,counter_results):  #右边显示的结果
@@ -222,11 +223,11 @@ class App(QMainWindow,Ui_mainWindow):
     def pause(self):
         if self.pause_flag == 0:
             self.pause_flag = 1
-            self.pushButton_pause.setText("Continue")
+            self.pushButton_pause.setText("继续")
             self.pushButton_start.setEnabled(False)
         else:
             self.pause_flag = 0
-            self.pushButton_pause.setText("Pause")
+            self.pushButton_pause.setText("暂停")
             self.pushButton_start.setEnabled(True)
 
         self.counterThread.sin_pauseFlag.emit(self.pause_flag)
