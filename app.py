@@ -30,7 +30,7 @@ class App(QMainWindow,Ui_mainWindow):
         self.countArea = []
         self.road_code = None
         self.time_code = None
-        self.show_label = names
+        self.show_label = names   #这里用来定义想要显示的标签
 
         #button function 设置按钮功能
         self.pushButton_selectArea.clicked.connect(self.select_area)
