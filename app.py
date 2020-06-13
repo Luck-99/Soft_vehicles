@@ -7,15 +7,11 @@ from gui import *
 import copy
 from counter import CounterThread
 from utils.sort import *
-from models import *
+from model import *
 from utils.utils import *
 from utils.datasets import *
 from config import *
-
-# import tensorflow as tf
-# config = tf.compat.v1.ConfigProto(allow_soft_placement=True)
-# gpu_options = tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=0.9)
-# config.gpu_options.allow_growth = True
+from models.yolo import Model
 
 class App(QMainWindow,Ui_mainWindow):
     #用来设置显示的主页面
@@ -52,25 +48,40 @@ class App(QMainWindow,Ui_mainWindow):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  #这里设置跑的设备
 
         #设置数据配置路径，权重路径。模板定义路径
-        data_config = "config/coco.data"
-        weights_path = "weights/yolov3.weights"
-        model_def = "config/yolov3.cfg"
-        data_config = parse_data_config(data_config)
-        self.yolo_class_names = load_classes(data_config["names"])   #设置不同分类的命名
+        data_config = "config/coco.yaml"
+        weights_path = "weights/yolov5s.pt"
+        model_def = "config/yolov5s.yaml"
+        # device = torch_utils.select_device('0,1,2,3')
+        # data_config = parse_data_config(data_config)
+        # model = torch.load(str(weights_path), map_location=device)['model']
+        # model.to(device).eval()
+        # name = model.names if hasattr(model, 'names') else model.modules.names
+        # self.yolo_class_names = load_classes(data_config["names"])   #设置不同分类的命名
+        # self.yolo_class_names = load_classes(name)
 
+        # device = torch_utils.select_device(device='0,1')
+        # self.model = torch.load(weights_path, map_location=device)['model']
+        # self.model.fuse()
+        # self.model.to(device).eval()
+        # # self.names = self.model.names if hasattr(self.model, 'names') else self.model.modules.names
+        # print('ok')
         # Initiate model
-        print("Loading model ...")
-        self.yolo_model = Darknet(model_def).to(self.device)   #这里调用的是基于darknet框架的Yolo算法
-        if weights_path.endswith(".weights"):
-            # Load darknet weights
-            self.yolo_model.load_darknet_weights(weights_path)
-        else:
-            # Load checkpoint weights
-            self.yolo_model.load_state_dict(torch.load(weights_path))
+        # print("Loading model ...")
+        # self.yolo_model = weights_path
+        # self.yolo_model.fuse()
+        # self.yolo_model.to(device).eval()
+        # self.yolo_model = Model(model_def).to(self.device)   #这里调用的是基于darknet框架的Yolo算法
+        # if weights_path.endswith(".weights"):
+        #     # Load darknet weights
+        #     self.yolo_model.load_darknet_weights(weights_path)
+        # else:
+        #     # Load checkpoint weights
+        # self.yolo_model.load_state_dict(torch.load(weights_path))
 
 
         # counter Thread   计算车辆数量的线程
-        self.counterThread = CounterThread(self.yolo_model,self.yolo_class_names,self.device)
+        # self.counterThread = CounterThread(self.yolo_model,self.yolo_class_names,self.device)
+        self.counterThread = CounterThread()
         self.counterThread.sin_counterResult.connect(self.show_image_label)
         self.counterThread.sin_done.connect(self.done)
         self.counterThread.sin_counter_results.connect(self.update_counter_results)
@@ -80,16 +91,9 @@ class App(QMainWindow,Ui_mainWindow):
     def open_video(self):
         openfile_name = QFileDialog.getOpenFileName(self,'打开视频','','Video files(*.avi , *.mp4)')  #设置选取视频的类型
         self.videoList = [openfile_name[0]]
-
-        # opendir_name = QFileDialog.getExistingDirectory(self, "Open dir", "./")
-        # self.videoList = [os.path.join(opendir_name,item) for item in os.listdir(opendir_name)]
-        # self.videoList = list(filter(lambda x: not os.path.isdir(x) , self.videoList))
-        # self.videoList.sort()
-
         vid = cv2.VideoCapture(self.videoList[0])  #打开视频获取内容     0可以调用摄像头
 
         # self.videoWriter = cv2.VideoWriter(openfile_name[0].split("/")[-1], cv2.VideoWriter_fourcc('X', 'V', 'I', 'D'), 10, (1920, 1080))
-
         while vid.isOpened():
             ret, frame = vid.read()
             if ret:
@@ -125,7 +129,6 @@ class App(QMainWindow,Ui_mainWindow):
 
 
     def select_area(self):
-
         #change Area needs update exampleImage
         if self.counter_thread_start_flag:
             ret, frame = self.videoCapture.read()
@@ -170,8 +173,8 @@ class App(QMainWindow,Ui_mainWindow):
             for item in self.show_label:
                 vars(self)[f"label_{item}"].setText('0')
             # clear result file
-            with open("results/results.txt", "w") as f:
-                pass
+            # with open("results/results.txt", "a") as f:
+            #     pass
 
             #start
             self.running_flag = 1
@@ -195,6 +198,7 @@ class App(QMainWindow,Ui_mainWindow):
             self.counterThread.sin_runningFlag.emit(self.running_flag)
             self.pushButton_openVideo.setEnabled(True)
             self.pushButton_selectArea.setEnabled(True)
+            self.pushButton_pause.setEnabled(False)
             self.pushButton_start.setText("开始")
 
 
@@ -215,7 +219,7 @@ class App(QMainWindow,Ui_mainWindow):
                 label_sum_var = vars(self)[f"label_sum"]
                 label_sum_var.setText(str(int(label_sum_var.text()) + 1)) #总数
                 label_sum_var.repaint()
-                f.writelines(str(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime()))+" "+' '.join(map(lambda x: str(x),result)))
+                f.writelines('  '.join(map(lambda x: str(x),result))+"\t"+str(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime())))  #打印结果
                 f.write(("\n"))
         # print("************************************************",len(counter_results))
 

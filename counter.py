@@ -4,10 +4,6 @@ from utils.sort import *
 from PyQt5.QtCore import  QThread, pyqtSignal
 import predict
 from config import *
-# from hyperlpr import pipline as pp
-# import HyperLPRLite as pr
-# model = pr.LPR("model/cascade.xml","model/model12.h5","model/ocr_plate_all_gru.h5")
-
 
 class CounterThread(QThread):
     sin_counterResult = pyqtSignal(np.ndarray)
@@ -18,12 +14,12 @@ class CounterThread(QThread):
     sin_counter_results = pyqtSignal(list)
     sin_pauseFlag = pyqtSignal(int)
 
-    def __init__(self,model,class_names,device):
+    # def __init__(self,model,class_names,device):
+    def __init__(self):
         super(CounterThread,self).__init__()
-
-        self.model = model
-        self.class_names = class_names
-        self.device = device
+        # self.model = model
+        # self.class_names = class_names
+        # self.device = device
 
         self.permission = names
 
@@ -39,6 +35,7 @@ class CounterThread(QThread):
         self.history = {}  #save history
         #history = {id:{"no_update_count": int, "his": list}}
 
+
         self.sin_runningFlag.connect(self.update_flag)
         self.sin_videoList.connect(self.update_videoList)
         self.sin_countArea.connect(self.update_countArea)
@@ -53,6 +50,7 @@ class CounterThread(QThread):
             cap = cv2.VideoCapture(video)
             out = cv2.VideoWriter(os.path.join(self.save_dir,video.split("/")[-1]), cv2.VideoWriter_fourcc('X', 'V', 'I', 'D'), 10, (1920, 1080))  #设置输出格式
             frame_count = 0
+
             while cap.isOpened():
                 # print(frame_count)
                 if self.running_flag:
@@ -65,7 +63,6 @@ class CounterThread(QThread):
                                 a1 = time.time()
                                 frame = self.counter(self.permission, self.colorDict, frame,np.array(self.countArea), self.mot_tracker, video)
                                 self.sin_counterResult.emit(frame)
-
                                 out.write(frame)  #输出视频到文件
                                 a2 = time.time()
                                 print(f"fps: {1 / (a2 - a1):.2f}")
@@ -73,7 +70,7 @@ class CounterThread(QThread):
                         else:
                             break
                     else:
-                        time.sleep(0.01)
+                        time.sleep(1)
                 else:
                     break
 
@@ -109,8 +106,7 @@ class CounterThread(QThread):
         painting = np.zeros((AreaBound[3] - AreaBound[1], AreaBound[2] - AreaBound[0]), dtype=np.uint8)
         CountArea_mini = CountArea - AreaBound[0:2]
         cv2.fillConvexPoly(painting, CountArea_mini, (1,))   #绘出所选区域
-
-        objects = predict.yolo_prediction(self.model,self.device,frame,self.class_names)
+        objects = predict.detect(source=frame)
         objects = filter(lambda x: x[0] in permission, objects)
         objects = filter(lambda x: x[1] > 0.5,objects)
         objects = list(filter(lambda x: pointInCountArea(painting, AreaBound, [int(x[2][0]), int(x[2][1] + x[2][3] / 2)]),objects))
@@ -126,20 +122,6 @@ class CounterThread(QThread):
                                int(item[2][1] + item[2][3] / 2),
                                item[1]])
         track_bbs_ids = mot_tracker.update(np.array(detections))
-
-        # for i, item in enumerate(objects):
-        #     # x1,y1,x2,y2,id = list(map(lambda x :int(x),item))
-        #     # id_log.add(id)
-        #     # objectName = get_objName(item, objects)
-        #
-        #     objectName, province, objectBox = item
-        #     x, y, w, h = objectBox
-        #     x1, y1, x2, y2 = int(x - w / 2), int(y - h / 2), int(x + w / 2), int(y + h / 2)
-        #
-        #     boxColor = colorDict[objectName]
-        #     cv2.rectangle(frame, (x1, y1), (x2, y2), boxColor, thickness=2)
-        #     cv2.putText(frame, objectName, (x1 - 1, y1 - 3), cv2.FONT_HERSHEY_COMPLEX, 0.7, boxColor,
-        #                 thickness=2)
 
         # painting area
         for i in range(len(CountArea)):
@@ -170,23 +152,14 @@ class CounterThread(QThread):
             res = sorted(result.items(), key=lambda d: d[1], reverse=True)  #排序结果
             objectName = res[0][0]  #得到识别名字
 
-            # img = cv2.imread(frame)
-            # img, res = pp.SimpleRecognizePlate(img)
-            # print(res[0])
-
-            # for pstr, confidence, rect in model.SimpleRecognizePlateByE2E(frame):
-            #     if confidence > 0.7:
-            #         print(pstr)
-            #         break
-
             boxColor = colorDict[objectName]
             cv2.rectangle(frame, (x1, y1), (x2, y2), boxColor, thickness=2)  #打印识别的框框
-            cv2.putText(frame, str(id) + "_" + objectName , (x1 - 1, y1 - 3), cv2.FONT_HERSHEY_COMPLEX, 0.7,  #打印车辆标签
+
+            cv2.putText(frame, str(id) + "_" + objectName, (x1 - 1, y1 - 3), cv2.FONT_HERSHEY_COMPLEX, 0.7,  #打印车辆标签 +visual_position(frame)
                         boxColor,
                         thickness=2)
 
-
-        counter_results = []
+        counter_results = []  #记录数据用的
         videoName = videoName.split('/')[-1]
         removed_id_list = []
         for id in self.history.keys():    #extract id after tracking
@@ -197,8 +170,8 @@ class CounterThread(QThread):
                 for i in set(his):
                     result[i] = his.count(i)
                 res = sorted(result.items(), key=lambda d: d[1], reverse=True)
-                objectName = res[0][0]
-                counter_results.append([videoName,id,objectName])
+                objectName = res[0][0]   #获取的物体名字
+                counter_results.append([videoName,id,objectName])   #这里直接添加数据
                 #del id
                 removed_id_list.append(id)
 
