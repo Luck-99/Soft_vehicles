@@ -39,12 +39,13 @@ def select_device(device='', apex=False, batch_size=None):
         for i in range(0, ng):
             if i == 1:
                 s = ' ' * len(s)
-            print("%sdevice%g _CudaDeviceProperties(name='%s', total_memory=%dMB)" %
-                  (s, i, x[i].name, x[i].total_memory / c))
+            # print("%sdevice%g _CudaDeviceProperties(name='%s', total_memory=%dMB)" %
+            #       (s, i, x[i].name, x[i].total_memory / c))
     else:
-        print('Using CPU')
+        # print('Using CPU')
+        pass
 
-    print('')  # skip a line
+    # print('')  # skip a line
     return torch.device('cuda:0' if cuda else 'cpu')
 
 

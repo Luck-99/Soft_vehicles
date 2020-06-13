@@ -10,6 +10,7 @@ from utils.sort import *
 from model import *
 from utils.utils import *
 from utils.datasets import *
+
 from config import *
 from models.yolo import Model
 
@@ -51,36 +52,8 @@ class App(QMainWindow,Ui_mainWindow):
         data_config = "config/coco.yaml"
         weights_path = "weights/yolov5s.pt"
         model_def = "config/yolov5s.yaml"
-        # device = torch_utils.select_device('0,1,2,3')
-        # data_config = parse_data_config(data_config)
-        # model = torch.load(str(weights_path), map_location=device)['model']
-        # model.to(device).eval()
-        # name = model.names if hasattr(model, 'names') else model.modules.names
-        # self.yolo_class_names = load_classes(data_config["names"])   #设置不同分类的命名
-        # self.yolo_class_names = load_classes(name)
-
-        # device = torch_utils.select_device(device='0,1')
-        # self.model = torch.load(weights_path, map_location=device)['model']
-        # self.model.fuse()
-        # self.model.to(device).eval()
-        # # self.names = self.model.names if hasattr(self.model, 'names') else self.model.modules.names
-        # print('ok')
-        # Initiate model
-        # print("Loading model ...")
-        # self.yolo_model = weights_path
-        # self.yolo_model.fuse()
-        # self.yolo_model.to(device).eval()
-        # self.yolo_model = Model(model_def).to(self.device)   #这里调用的是基于darknet框架的Yolo算法
-        # if weights_path.endswith(".weights"):
-        #     # Load darknet weights
-        #     self.yolo_model.load_darknet_weights(weights_path)
-        # else:
-        #     # Load checkpoint weights
-        # self.yolo_model.load_state_dict(torch.load(weights_path))
-
 
         # counter Thread   计算车辆数量的线程
-        # self.counterThread = CounterThread(self.yolo_model,self.yolo_class_names,self.device)
         self.counterThread = CounterThread()
         self.counterThread.sin_counterResult.connect(self.show_image_label)
         self.counterThread.sin_done.connect(self.done)

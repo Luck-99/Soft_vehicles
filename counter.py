@@ -5,6 +5,13 @@ from PyQt5.QtCore import  QThread, pyqtSignal
 import predict
 from config import *
 
+from utils.util import *
+
+device = torch_utils.select_device('0,1')
+model = torch.load("weights/yolov5s.pt", map_location=device)['model']
+model.fuse()
+model.to(device).eval()
+
 class CounterThread(QThread):
     sin_counterResult = pyqtSignal(np.ndarray)
     sin_runningFlag = pyqtSignal(int)
@@ -13,13 +20,8 @@ class CounterThread(QThread):
     sin_done = pyqtSignal(int)
     sin_counter_results = pyqtSignal(list)
     sin_pauseFlag = pyqtSignal(int)
-
-    # def __init__(self,model,class_names,device):
     def __init__(self):
         super(CounterThread,self).__init__()
-        # self.model = model
-        # self.class_names = class_names
-        # self.device = device
 
         self.permission = names
 
@@ -106,7 +108,8 @@ class CounterThread(QThread):
         painting = np.zeros((AreaBound[3] - AreaBound[1], AreaBound[2] - AreaBound[0]), dtype=np.uint8)
         CountArea_mini = CountArea - AreaBound[0:2]
         cv2.fillConvexPoly(painting, CountArea_mini, (1,))   #绘出所选区域
-        objects = predict.detect(source=frame)
+
+        objects = predict.detect(model,source=frame)
         objects = filter(lambda x: x[0] in permission, objects)
         objects = filter(lambda x: x[1] > 0.5,objects)
         objects = list(filter(lambda x: pointInCountArea(painting, AreaBound, [int(x[2][0]), int(x[2][1] + x[2][3] / 2)]),objects))
@@ -182,7 +185,6 @@ class CounterThread(QThread):
             self.sin_counter_results.emit(counter_results)
 
         # print(self.history)
-
 
         return frame
 
