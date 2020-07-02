@@ -47,7 +47,7 @@ import torch
 #         pass
 #     return objects
 
-def detect(model,source,half=False,imgsz=int(640)):
+def detect(model,source,half=False,imgsz=int(1920)):
     device = torch_utils.select_device('0,1')
     dataset = Load_Images(source, img_size=imgsz)
     # Get names

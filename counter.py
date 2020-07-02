@@ -7,8 +7,8 @@ from config import *
 
 from utils.util import *
 
-device = torch_utils.select_device('0,1')
-model = torch.load("weights/yolov5s.pt", map_location=device)['model']
+device = torch_utils.select_device('0,1,2,3')
+model = torch.load("weights/yolov5x.pt", map_location=device)['model']
 model.fuse()
 model.to(device).eval()
 
