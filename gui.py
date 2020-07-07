@@ -99,28 +99,34 @@ class Ui_mainWindow(object):
 
 
         self.groupBox_plate = QtWidgets.QGroupBox(self.centralwidget)
-        self.groupBox_plate.setGeometry(QtCore.QRect(1470,270,320,150))
+        self.groupBox_plate.setGeometry(QtCore.QRect(1470,270,320,450))
         self.groupBox_plate.setObjectName("groupBox_plate")
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.groupBox_plate)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout_3.setSpacing(0)
+        self.verticalLayout_3.setSpacing(1)
         self.gridLayout_plate = QtWidgets.QGridLayout()
         self.gridLayout_plate.setObjectName("gridLayout_plate")
+
+        self.label_car_pic = QtWidgets.QLabel(self.groupBox_plate)
+        self.label_car_pic.setObjectName("label_plate_pic")
+        self.label_car_pic.setStyleSheet("background-color: rgb(233, 185, 110);")
+        self.label_car_pic.setMinimumSize(320, 320)
+        self.gridLayout_plate.addWidget(self.label_car_pic, 0, 0, 1, 3, QtCore.Qt.AlignCenter)
 
         self.label_plate_pic = QtWidgets.QLabel(self.groupBox_plate)
         self.label_plate_pic.setObjectName("label_plate_pic")
         self.label_plate_pic.setStyleSheet("background-color: rgb(233, 185, 110);")
-        self.label_plate_pic.setMinimumSize(320,100)
-        self.gridLayout_plate.addWidget(self.label_plate_pic, 0, 0, 1, 3, QtCore.Qt.AlignCenter)
+        self.label_plate_pic.setMinimumSize(320,80)
+        self.gridLayout_plate.addWidget(self.label_plate_pic, 1, 0, 1, 3, QtCore.Qt.AlignCenter)
 
         self.label_plate_name = QtWidgets.QLabel(self.groupBox_plate)
         self.label_plate_name.setObjectName("label_plate_name")
-        self.gridLayout_plate.addWidget(self.label_plate_name, 1, 0, 1, 1, QtCore.Qt.AlignHCenter)
+        self.gridLayout_plate.addWidget(self.label_plate_name, 2, 0, 1, 1, QtCore.Qt.AlignHCenter)
 
         self.label_plate = QtWidgets.QLabel(self.groupBox_plate)
         self.label_plate.setObjectName("label_plate")
-        self.gridLayout_plate.addWidget(self.label_plate, 1, 1, 1, 2, QtCore.Qt.AlignHCenter)
+        self.gridLayout_plate.addWidget(self.label_plate, 2, 1, 1, 2, QtCore.Qt.AlignHCenter)
 
         self.verticalLayout_3.addLayout(self.gridLayout_plate)
 

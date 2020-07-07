@@ -8,12 +8,13 @@ from config import *
 from utils.util import *
 
 device = torch_utils.select_device('0,1,2,3')
-model = torch.load("weights/yolov5x.pt", map_location=device)['model']
+model = torch.load("weights/yolov5s.pt", map_location=device)['model']
 model.fuse()
 model.to(device).eval()
 
 class CounterThread(QThread):
     sin_counterResult = pyqtSignal(np.ndarray)
+    sin_carResult = pyqtSignal(np.ndarray)
     sin_runningFlag = pyqtSignal(int)
     sin_videoList = pyqtSignal(list)
     sin_countArea = pyqtSignal(list)
@@ -36,6 +37,7 @@ class CounterThread(QThread):
         self.last_max_id = 0
         self.history = {}  #save history
         #history = {id:{"no_update_count": int, "his": list}}
+        self.car_name = []
 
 
         self.sin_runningFlag.connect(self.update_flag)
@@ -59,11 +61,12 @@ class CounterThread(QThread):
                     if not self.pause_flag:
                         ret, frame = cap.read()
                         #print(type(cap.read()))
+                        clear=frame
 
                         if ret:
                             if frame_count % 3 == 0:   #这里设置识别的帧数
                                 a1 = time.time()
-                                frame = self.counter(self.permission, self.colorDict, frame,np.array(self.countArea), self.mot_tracker, video)
+                                frame = self.counter(self.permission, self.colorDict, frame,clear,np.array(self.countArea), self.mot_tracker, video)
                                 self.sin_counterResult.emit(frame)
                                 out.write(frame)  #输出视频到文件
                                 a2 = time.time()
@@ -101,7 +104,7 @@ class CounterThread(QThread):
         print("Update countArea!")
         self.countArea = Area
 
-    def counter(self, permission, colorDict, frame, CountArea, mot_tracker, videoName):
+    def counter(self, permission, colorDict, frame, clear, CountArea, mot_tracker, videoName):
 
         # painting area
         AreaBound = [min(CountArea[:, 0]), min(CountArea[:, 1]), max(CountArea[:, 0]), max(CountArea[:, 1])]
@@ -139,6 +142,7 @@ class CounterThread(QThread):
                     self.history[id]["no_update_count"] = 0
                     self.history[id]["his"] = []
                     self.history[id]["his"].append(objectName)
+
                 else:
                     self.history[id]["no_update_count"] = 0
                     self.history[id]["his"].append(objectName)
@@ -154,13 +158,22 @@ class CounterThread(QThread):
                 result[i] = his.count(i)
             res = sorted(result.items(), key=lambda d: d[1], reverse=True)  #排序结果
             objectName = res[0][0]  #得到识别名字
-
             boxColor = colorDict[objectName]
+
+            if (objectName in ['bicycle', 'car', 'motorcycle', 'bus', 'truck']) and (str(id) + "_" + objectName not in self.car_name):
+                self.car_name.append(str(id) + "_" + objectName)
+                car_pic = clear[y1 - 10:y2 + 10, x1 - 10:x2 + 10]  # 获取识别的物体
+                self.sin_carResult.emit(car_pic)
+
+
             cv2.rectangle(frame, (x1, y1), (x2, y2), boxColor, thickness=2)  #打印识别的框框
 
             cv2.putText(frame, str(id) + "_" + objectName, (x1 - 1, y1 - 3), cv2.FONT_HERSHEY_COMPLEX, 0.7,  #打印车辆标签 +visual_position(frame)
                         boxColor,
                         thickness=2)
+
+
+
 
         counter_results = []  #记录数据用的
         videoName = videoName.split('/')[-1]

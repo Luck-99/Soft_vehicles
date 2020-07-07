@@ -20,6 +20,7 @@ class App(QMainWindow,Ui_mainWindow):
         super(App,self).__init__()
         self.setupUi(self)
         self.label_image_size = (self.label_image.geometry().width(),self.label_image.geometry().height())
+        self.label_car_size = (320, 320)
         self.video = None
         self.exampleImage = None
         self.imgScale = None
@@ -58,6 +59,7 @@ class App(QMainWindow,Ui_mainWindow):
         self.counterThread.sin_counterResult.connect(self.show_image_label)
         self.counterThread.sin_done.connect(self.done)
         self.counterThread.sin_counter_results.connect(self.update_counter_results)
+        self.counterThread.sin_carResult.connect(self.show_car_label)
 
 
 
@@ -138,6 +140,15 @@ class App(QMainWindow,Ui_mainWindow):
 
         self.label_image.setPixmap(pix)  #在框框里显示视频
         self.label_image.repaint()
+
+    def show_car_label(self, img_np):
+        img_np = cv2.cvtColor(img_np,cv2.COLOR_BGR2RGB)
+        img_np = cv2.resize(img_np, self.label_car_size)
+        frame = QImage(img_np, self.label_car_size[0], self.label_car_size[1], QImage.Format_RGB888)  #构造好图像
+        pix = QPixmap.fromImage(frame)
+
+        self.label_car_pic.setPixmap(pix)  #在框框里显示视频
+        self.label_car_pic.repaint()
 
     def start_count(self):
         if self.running_flag == 0:
