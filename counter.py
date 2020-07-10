@@ -3,6 +3,9 @@ import cv2
 from utils.sort import *
 from PyQt5.QtCore import  QThread, pyqtSignal
 import predict
+from utils.CNN import *
+from tensorflow import keras
+
 from config import *
 
 from utils.util import *
@@ -27,6 +30,9 @@ class CounterThread(QThread):
         self.permission = names
 
         self.colorDict = color_dict
+
+        self.unet = keras.models.load_model('weights/unet.h5')
+        self.cnn = keras.models.load_model('weights/cnn.h5')
 
         # create instance of SORT
         self.mot_tracker = Sort(max_age=10, min_hits=2)
@@ -164,6 +170,7 @@ class CounterThread(QThread):
                 self.car_name.append(str(id) + "_" + objectName)
                 car_pic = clear[y1 - 10:y2 + 10, x1 - 10:x2 + 10]  # 获取识别的物体
                 self.sin_carResult.emit(car_pic)
+                display(car_pic)
 
 
             cv2.rectangle(frame, (x1, y1), (x2, y2), boxColor, thickness=2)  #打印识别的框框
@@ -171,9 +178,6 @@ class CounterThread(QThread):
             cv2.putText(frame, str(id) + "_" + objectName, (x1 - 1, y1 - 3), cv2.FONT_HERSHEY_COMPLEX, 0.7,  #打印车辆标签 +visual_position(frame)
                         boxColor,
                         thickness=2)
-
-
-
 
         counter_results = []  #记录数据用的
         videoName = videoName.split('/')[-1]
@@ -263,6 +267,22 @@ def pointInCountArea(painting, AreaBound, point):
         return 0
     else:
         return painting[point[1],point[0]]
+
+def display(self,car_pic):
+    img_src = car_pic
+    h, w = img_src.shape[0], img_src.shape[1]
+    if h * w <= 240 * 80 and 2 <= w / h <= 5:  # 满足该条件说明可能整个图片就是一张车牌,无需定位,直接识别即可
+        lic = cv2.resize(img_src, dsize=(240, 80), interpolation=cv2.INTER_AREA)[:, :, :3]  # 直接resize为(240,80)
+        img_src_copy, Lic_img = img_src, [lic]
+    else:  # 否则就需通过unet对img_src原图预测,得到img_mask,实现车牌定位,然后进行识别
+        img_src, img_mask = unet_predict(self.unet, self.img_src_path)
+        img_src_copy, Lic_img = locate_and_correct(img_src, img_mask)  # 利用core.py中的locate_and_correct函数进行车牌定位和矫正
+    Lic_pred = cnn_predict(self.cnn, Lic_img)  # 利用cnn进行车牌的识别预测,Lic_pred中存的是元祖(车牌图片,识别结果)
+    if Lic_pred:
+        for i, lic_pred in enumerate(Lic_pred):
+            print(lic_pred[1])
+    else:  # Lic_pred为空说明未能识别
+        print('未能识别')
 
 
 
