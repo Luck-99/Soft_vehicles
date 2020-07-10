@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from skimage import io
 import glob
-from sklearn.utils.linear_assignment_ import linear_assignment
+from utils.linear_assignment_ import linear_assignment
 # from scipy.optimize import linear_sum_assignment
 import time
 import argparse

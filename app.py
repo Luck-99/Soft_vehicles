@@ -21,6 +21,7 @@ class App(QMainWindow,Ui_mainWindow):
         self.setupUi(self)
         self.label_image_size = (self.label_image.geometry().width(),self.label_image.geometry().height())
         self.label_car_size = (320, 320)
+        self.label_plate_size = (320, 80)
         self.video = None
         self.exampleImage = None
         self.imgScale = None
@@ -60,6 +61,8 @@ class App(QMainWindow,Ui_mainWindow):
         self.counterThread.sin_done.connect(self.done)
         self.counterThread.sin_counter_results.connect(self.update_counter_results)
         self.counterThread.sin_carResult.connect(self.show_car_label)
+        self.counterThread.sin_plateResult.connect(self.show_plate_label)
+        self.counterThread.sin_platepicResult.connect(self.update_plate_label)
 
 
 
@@ -150,6 +153,15 @@ class App(QMainWindow,Ui_mainWindow):
         self.label_car_pic.setPixmap(pix)  #在框框里显示视频
         self.label_car_pic.repaint()
 
+    def show_plate_label(self, img_np):
+        img_np = cv2.cvtColor(img_np,cv2.COLOR_BGR2RGB)
+        img_np = cv2.resize(img_np, self.label_plate_size)
+        frame = QImage(img_np, self.label_plate_size[0], self.label_plate_size[1], QImage.Format_RGB888)  #构造好图像
+        pix = QPixmap.fromImage(frame)
+
+        self.label_plate_pic.setPixmap(pix)  #在框框里显示视频
+        self.label_plate_pic.repaint()
+
     def start_count(self):
         if self.running_flag == 0:
             #clear count and display
@@ -192,6 +204,11 @@ class App(QMainWindow,Ui_mainWindow):
             self.pushButton_openVideo.setEnabled(True)
             self.pushButton_start.setEnabled(False)
             self.pushButton_start.setText("开始")
+
+    def update_plate_label(self,pic_result):
+        self.label_plate.setText(pic_result)
+
+
 
 
     def update_counter_results(self,counter_results):  #右边显示的结果
