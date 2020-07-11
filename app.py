@@ -193,7 +193,7 @@ class App(QMainWindow,Ui_mainWindow):
             self.running_flag = 0
             self.counterThread.sin_runningFlag.emit(self.running_flag)
             self.pushButton_openVideo.setEnabled(True)
-            self.pushButton_selectArea.setEnabled(True)
+            self.pushButton_selectArea.setEnabled(False)
             self.pushButton_pause.setEnabled(False)
             self.pushButton_start.setText("开始")
 
@@ -203,6 +203,7 @@ class App(QMainWindow,Ui_mainWindow):
         if sin == 1:
             self.pushButton_openVideo.setEnabled(True)
             self.pushButton_start.setEnabled(False)
+            self.pushButton_pause.setEnabled(False)
             self.pushButton_start.setText("开始")
 
     def update_plate_label(self,pic_result):

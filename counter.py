@@ -69,12 +69,11 @@ class CounterThread(QThread):
                     if not self.pause_flag:
                         ret, frame = cap.read()
                         #print(type(cap.read()))
-                        clear=frame
 
                         if ret:
                             if frame_count % 3 == 0:   #这里设置识别的帧数
                                 a1 = time.time()
-                                frame = self.counter(self.permission, self.colorDict, frame,clear,np.array(self.countArea), self.mot_tracker, video)
+                                frame = self.counter(self.permission, self.colorDict, frame,np.array(self.countArea), self.mot_tracker, video)
                                 self.sin_counterResult.emit(frame)
                                 out.write(frame)  #输出视频到文件
                                 a2 = time.time()
@@ -128,10 +127,11 @@ class CounterThread(QThread):
                 self.sin_plateResult.emit(pic)
                 self.sin_platepicResult.emit(lic_pred[1])
                 print(lic_pred[1])
-        else:  # Lic_pred为空说明未能识别
-            print('未能识别')
 
-    def counter(self, permission, colorDict, frame, clear, CountArea, mot_tracker, videoName):
+        else:  # Lic_pred为空说明未能识别
+            self.sin_platepicResult.emit('无法识别')
+
+    def counter(self, permission, colorDict, frame,  CountArea, mot_tracker, videoName):
 
         # painting area
         AreaBound = [min(CountArea[:, 0]), min(CountArea[:, 1]), max(CountArea[:, 0]), max(CountArea[:, 1])]
@@ -189,7 +189,7 @@ class CounterThread(QThread):
 
             if (objectName in ['bicycle', 'car', 'motorcycle', 'bus', 'truck']) and (str(id) + "_" + objectName not in self.car_name):
                 self.car_name.append(str(id) + "_" + objectName)
-                car_pic = clear[y1 - 10:y2 + 10, x1 - 10:x2 + 10]  # 获取识别的物体
+                car_pic = frame[y1 - 10:y2 + 10, x1 - 10:x2 + 10]  # 获取识别的物体
                 self.sin_carResult.emit(car_pic)
                 self.display(car_pic)
 
@@ -205,7 +205,7 @@ class CounterThread(QThread):
         removed_id_list = []
         for id in self.history.keys():    #extract id after tracking
             self.history[id]["no_update_count"] += 1
-            if  self.history[id]["no_update_count"] > 5:
+            if self.history[id]["no_update_count"] > 5:
                 his = self.history[id]["his"]
                 result = {}
                 for i in set(his):
