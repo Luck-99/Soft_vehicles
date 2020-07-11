@@ -14,6 +14,8 @@ device = torch_utils.select_device('0,1,2,3')
 model = torch.load("weights/yolov5s.pt", map_location=device)['model']
 model.fuse()
 model.to(device).eval()
+#plateall=[]
+plateall=''
 
 class CounterThread(QThread):
     sin_counterResult = pyqtSignal(np.ndarray)
@@ -126,6 +128,9 @@ class CounterThread(QThread):
                 pic= lic_pred[0][:, :, ]
                 self.sin_plateResult.emit(pic)
                 self.sin_platepicResult.emit(lic_pred[1])
+                #plateall.append(str(lic_pred[1]))
+                global plateall
+                plateall = str(lic_pred[1])
                 print(lic_pred[1])
 
         else:  # Lic_pred为空说明未能识别
@@ -212,7 +217,7 @@ class CounterThread(QThread):
                     result[i] = his.count(i)
                 res = sorted(result.items(), key=lambda d: d[1], reverse=True)
                 objectName = res[0][0]   #获取的物体名字
-                counter_results.append([videoName,id,objectName])   #这里直接添加数据
+                counter_results.append([videoName,id,objectName,plateall])   #这里直接添加数据
                 #del id
                 removed_id_list.append(id)
 
