@@ -5,7 +5,7 @@ from PyQt5.QtCore import  QThread, pyqtSignal
 import predict
 from utils.CNN import *
 from tensorflow import keras
-
+from PIL import Image, ImageDraw, ImageFont  # 调用库
 from config import *
 
 from utils.util import *
@@ -131,6 +131,22 @@ class CounterThread(QThread):
                 #plateall.append(str(lic_pred[1]))
                 global plateall
                 plateall = str(lic_pred[1])
+
+                ysize = 960 / h
+                picture = cv2.resize(car_pic, None, fx=ysize, fy=ysize, interpolation=cv2.INTER_CUBIC)
+                #cv2.imwrite('data/images/' + str(plateall) + '.jpg', picture)    imwrite不能输出中文
+                cv2.imencode('.jpg', picture)[1].tofile('data/images/' + str(plateall) + '.jpg')
+
+                fontpath = ImageFont.truetype("utils/simhei.ttf", 40)  # 字体和大小
+                im1 = Image.open('data/images/' + str(plateall) + '.jpg')  # 文件存在的路径
+                im2 = Image.new("RGB", (im1.width, im1.height), "#FFFFFF")  # 矩形背景颜色
+                draw = ImageDraw.Draw(im1)  # 定义图片
+                draw.text((10, 10), str(plateall), fill=(255, 255, 0), font=fontpath)  # 添加文字
+                im2.paste(im1, (0, 0))
+                # print(result)
+                im2.save('data/images/' + str(plateall) + '.jpg')
+
+
                 print(lic_pred[1])
 
         else:  # Lic_pred为空说明未能识别
@@ -196,7 +212,9 @@ class CounterThread(QThread):
                 self.car_name.append(str(id) + "_" + objectName)
                 car_pic = frame[y1 - 10:y2 + 10, x1 - 10:x2 + 10]  # 获取识别的物体
                 self.sin_carResult.emit(car_pic)
+
                 self.display(car_pic)
+
 
 
             cv2.rectangle(frame, (x1, y1), (x2, y2), boxColor, thickness=2)  #打印识别的框框
