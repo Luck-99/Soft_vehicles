@@ -268,7 +268,7 @@ class CounterThread(QThread):
                     result[i] = his.count(i)
                 res = sorted(result.items(), key=lambda d: d[1], reverse=True)
                 objectName = res[0][0]   #获取的物体名字
-                counter_results.append([videoName,id,objectName,plateall])   #这里直接添加数据
+                counter_results.append([videoName, id, objectName, plateall, colorresult])   #这里直接添加数据
                 #del id
                 removed_id_list.append(id)
 
