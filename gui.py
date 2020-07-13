@@ -112,13 +112,13 @@ class Ui_mainWindow(object):
         self.label_car_pic.setObjectName("label_plate_pic")
         self.label_car_pic.setStyleSheet("background-color: rgb(233, 185, 110);")
         self.label_car_pic.setMinimumSize(320, 320)
-        self.gridLayout_plate.addWidget(self.label_car_pic, 0, 0, 1, 3, QtCore.Qt.AlignCenter)
+        self.gridLayout_plate.addWidget(self.label_car_pic, 0, 0, 1, 5, QtCore.Qt.AlignCenter)
 
         self.label_plate_pic = QtWidgets.QLabel(self.groupBox_plate)
         self.label_plate_pic.setObjectName("label_plate_pic")
         self.label_plate_pic.setStyleSheet("background-color: rgb(233, 185, 110);")
         self.label_plate_pic.setMinimumSize(320,80)
-        self.gridLayout_plate.addWidget(self.label_plate_pic, 1, 0, 1, 3, QtCore.Qt.AlignCenter)
+        self.gridLayout_plate.addWidget(self.label_plate_pic, 1, 0, 1, 5, QtCore.Qt.AlignCenter)
 
         self.label_plate_name = QtWidgets.QLabel(self.groupBox_plate)
         self.label_plate_name.setObjectName("label_plate_name")
@@ -126,15 +126,15 @@ class Ui_mainWindow(object):
 
         self.label_plate = QtWidgets.QLabel(self.groupBox_plate)
         self.label_plate.setObjectName("label_plate")
-        self.gridLayout_plate.addWidget(self.label_plate, 2, 1, 1, 2, QtCore.Qt.AlignHCenter)
+        self.gridLayout_plate.addWidget(self.label_plate, 2, 1, 1, 1, QtCore.Qt.AlignHCenter)
 
         self.label_color_name = QtWidgets.QLabel(self.groupBox_plate)
         self.label_color_name.setObjectName("label_color_name")
-        self.gridLayout_plate.addWidget(self.label_color_name, 3, 0, 1, 1, QtCore.Qt.AlignHCenter)
+        self.gridLayout_plate.addWidget(self.label_color_name, 2, 3, 1, 1, QtCore.Qt.AlignHCenter)
 
         self.label_color = QtWidgets.QLabel(self.groupBox_plate)
         self.label_color.setObjectName("label_color")
-        self.gridLayout_plate.addWidget(self.label_color, 3, 1, 1, 2, QtCore.Qt.AlignHCenter)
+        self.gridLayout_plate.addWidget(self.label_color, 2, 4, 1, 1, QtCore.Qt.AlignCenter)
 
 
 

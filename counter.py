@@ -190,9 +190,7 @@ class CounterThread(QThread):
                                item[1]])
         track_bbs_ids = mot_tracker.update(np.array(detections))
 
-        # painting area
-        for i in range(len(CountArea)):
-            cv2.line(frame, tuple(CountArea[i]), tuple(CountArea[(i + 1) % (len(CountArea))]), (0, 0, 255), 2)
+
 
         if len(track_bbs_ids) > 0:
             for bb in track_bbs_ids:    #add all bbox to history
@@ -248,7 +246,9 @@ class CounterThread(QThread):
                 print(str(objects2[0][0]))
                 self.display(car_pic)
 
-
+            # painting area
+            for i in range(len(CountArea)):
+                cv2.line(frame, tuple(CountArea[i]), tuple(CountArea[(i + 1) % (len(CountArea))]), (0, 0, 255), 2)
 
             cv2.rectangle(frame, (x1, y1), (x2, y2), boxColor, thickness=2)  #打印识别的框框
 
