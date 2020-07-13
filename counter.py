@@ -14,14 +14,22 @@ device = torch_utils.select_device('0,1,2,3')
 model = torch.load("weights/yolov5s.pt", map_location=device)['model']
 model.fuse()
 model.to(device).eval()
+
+model2 = torch.load("weights/color.pt", map_location=device)['model']
+model2.fuse()
+model2.to(device).eval()
+
 #plateall=[]
 plateall=''
+truth=''
+colorresult=''
 
 class CounterThread(QThread):
     sin_counterResult = pyqtSignal(np.ndarray)
     sin_carResult = pyqtSignal(np.ndarray)
     sin_plateResult = pyqtSignal(np.ndarray)
     sin_platepicResult = pyqtSignal(str)
+    sin_colorResult = pyqtSignal(str)
     sin_runningFlag = pyqtSignal(int)
     sin_videoList = pyqtSignal(list)
     sin_countArea = pyqtSignal(list)
@@ -131,7 +139,8 @@ class CounterThread(QThread):
                 #plateall.append(str(lic_pred[1]))
                 global plateall
                 plateall = str(lic_pred[1])
-
+                global truth
+                global colorresult
                 ysize = 960 / h
                 picture = cv2.resize(car_pic, None, fx=ysize, fy=ysize, interpolation=cv2.INTER_CUBIC)
                 #cv2.imwrite('data/images/' + str(plateall) + '.jpg', picture)    imwrite不能输出中文
@@ -141,7 +150,9 @@ class CounterThread(QThread):
                 im1 = Image.open('data/images/' + str(plateall) + '.jpg')  # 文件存在的路径
                 im2 = Image.new("RGB", (im1.width, im1.height), "#FFFFFF")  # 矩形背景颜色
                 draw = ImageDraw.Draw(im1)  # 定义图片
-                draw.text((10, 10), str(plateall), fill=(255, 255, 0), font=fontpath)  # 添加文字
+                draw.text((10, 10), '车牌号：'+str(plateall), fill=(255, 255, 0), font=fontpath)  # 添加文字
+                draw.text((10, 60), '车辆颜色：'+str(colorresult), fill=(255, 255, 0), font=fontpath)  # 添加文字
+                draw.text((10, 110), '置信度：'+str(truth[0][1]), fill=(255, 255, 0), font=fontpath)  # 添加文字
                 im2.paste(im1, (0, 0))
                 # print(result)
                 im2.save('data/images/' + str(plateall) + '.jpg')
@@ -161,6 +172,8 @@ class CounterThread(QThread):
         cv2.fillConvexPoly(painting, CountArea_mini, (1,))   #绘出所选区域
 
         objects = predict.detect(model,source=frame)
+        global truth
+        truth=objects
         objects = filter(lambda x: x[0] in permission, objects)
         objects = filter(lambda x: x[1] > 0.5,objects)
         objects = list(filter(lambda x: pointInCountArea(painting, AreaBound, [int(x[2][0]), int(x[2][1] + x[2][3] / 2)]),objects))
@@ -212,14 +225,34 @@ class CounterThread(QThread):
                 self.car_name.append(str(id) + "_" + objectName)
                 car_pic = frame[y1 - 10:y2 + 10, x1 - 10:x2 + 10]  # 获取识别的物体
                 self.sin_carResult.emit(car_pic)
+                objects2 = predict.detect(model2, source=car_pic)
+                global colorresult
+                if(str(objects2[0][0])=='black'):
+                    colorresult='黑色'
+                elif(str(objects2[0][0])=='blue'):
+                    colorresult = '蓝色'
+                elif (str(objects2[0][0]) == 'cyan'):
+                    colorresult = '青色'
+                elif (str(objects2[0][0]) == 'gray'):
+                    colorresult = '灰色'
+                elif (str(objects2[0][0]) == 'green'):
+                    colorresult = '绿色'
+                elif (str(objects2[0][0]) == 'red'):
+                    colorresult = '红色'
+                elif (str(objects2[0][0]) == 'white'):
+                    colorresult = '白色'
+                elif (str(objects2[0][0]) == 'yellow'):
+                    colorresult = '黄色'
 
+                self.sin_colorResult.emit(str(colorresult))
+                print(str(objects2[0][0]))
                 self.display(car_pic)
 
 
 
             cv2.rectangle(frame, (x1, y1), (x2, y2), boxColor, thickness=2)  #打印识别的框框
 
-            cv2.putText(frame, str(id) + "_" + objectName, (x1 - 1, y1 - 3), cv2.FONT_HERSHEY_COMPLEX, 0.7,  #打印车辆标签 +visual_position(frame)
+            cv2.putText(frame, str(id) + "_" + objectName+'  '+str(truth[0][1]), (x1 - 1, y1 - 3), cv2.FONT_HERSHEY_COMPLEX, 0.7,  #打印车辆标签 +visual_position(frame)
                         boxColor,
                         thickness=2)
 

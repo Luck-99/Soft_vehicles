@@ -63,7 +63,7 @@ class App(QMainWindow,Ui_mainWindow):
         self.counterThread.sin_carResult.connect(self.show_car_label)
         self.counterThread.sin_plateResult.connect(self.show_plate_label)
         self.counterThread.sin_platepicResult.connect(self.update_plate_label)
-
+        self.counterThread.sin_colorResult.connect(self.update_color_label)
 
 
     def open_video(self):
@@ -208,6 +208,9 @@ class App(QMainWindow,Ui_mainWindow):
 
     def update_plate_label(self,pic_result):
         self.label_plate.setText(pic_result)
+
+    def update_color_label(self,color_result):
+        self.label_color.setText(color_result)
 
 
 

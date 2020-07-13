@@ -128,6 +128,16 @@ class Ui_mainWindow(object):
         self.label_plate.setObjectName("label_plate")
         self.gridLayout_plate.addWidget(self.label_plate, 2, 1, 1, 2, QtCore.Qt.AlignHCenter)
 
+        self.label_color_name = QtWidgets.QLabel(self.groupBox_plate)
+        self.label_color_name.setObjectName("label_color_name")
+        self.gridLayout_plate.addWidget(self.label_color_name, 3, 0, 1, 1, QtCore.Qt.AlignHCenter)
+
+        self.label_color = QtWidgets.QLabel(self.groupBox_plate)
+        self.label_color.setObjectName("label_color")
+        self.gridLayout_plate.addWidget(self.label_color, 3, 1, 1, 2, QtCore.Qt.AlignHCenter)
+
+
+
         self.verticalLayout_3.addLayout(self.gridLayout_plate)
 
         # self.label_plate = QtWidgets.QLabel(self.centralwidget)
@@ -206,6 +216,8 @@ class Ui_mainWindow(object):
 
         #车牌显示
         self.label_plate_name.setText(_translate("mainWindows","车牌："))
+        #颜色显示
+        self.label_color_name.setText(_translate("mainWindows", "颜色："))
         #准备在这里添加行人和车牌
         self.pushButton_openVideo.setText(_translate("mainWindow", "打开视频"))
         self.pushButton_selectArea.setText(_translate("mainWindow", "选择区域"))
