@@ -404,3 +404,23 @@ video-02.mp4  4  car  ´¨B¡¤0GP01  	2020-07-14 15:32:48
 video-02.mp4  5  car    	2020-07-14 15:32:49
 video-02.mp4  6  person	2020-07-14 15:32:51
 video-02.mp4  9  car  ´¨J¡¤24453  	2020-07-14 15:32:53
+video-02.mp4  3  motorcycle	2020-07-14 16:40:06
+video-02.mp4  1  person	2020-07-14 16:40:09
+video-02.mp4  4  truck    	2020-07-14 16:40:11
+video-02.mp4  4  truck    	2020-07-14 16:40:12
+video-02.mp4  6  car    	2020-07-14 16:40:13
+video-02.mp4  9  motorcycle	2020-07-14 16:40:17
+video-02.mp4  7  car    	2020-07-14 16:40:18
+video-02.mp4  11  car    	2020-07-14 16:40:22
+video-02.mp4  12  car    	2020-07-14 16:40:24
+video-02.mp4  13  car    	2020-07-14 16:40:29
+video-02.mp4  14  car    	2020-07-14 16:40:34
+video-02.mp4  1  car  ´¨J¡¤1726W  	2020-07-14 16:41:39
+video-02.mp4  3  person	2020-07-14 16:41:40
+video-02.mp4  2  car    	2020-07-14 16:41:41
+video-02.mp4  7  car  ´¨J¡¤7B171  	2020-07-14 16:41:52
+video-02.mp4  8  car  ¶õA¡¤0GP01  	2020-07-14 16:41:57
+video-02.mp4  9  car    	2020-07-14 16:41:58
+video-02.mp4  10  person	2020-07-14 16:42:00
+video-02.mp4  13  car  ´¨J¡¤Z4A53  	2020-07-14 16:42:02
+video-02.mp4  15  motorcycle	2020-07-14 16:42:07
