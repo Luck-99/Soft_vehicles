@@ -248,7 +248,6 @@ class CounterThread(QThread):
                     colorresult = '黄色'
 
                 self.sin_colorResult.emit(str(colorresult))
-                colorresult=''
                 print(str(objects2[0][0]))
                 self.display(car_pic)
 
