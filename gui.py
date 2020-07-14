@@ -57,9 +57,9 @@ class Ui_mainWindow(object):
         self.label_6.setObjectName("label_6")
         self.gridLayout_count.addWidget(self.label_6, 3, 0, 1, 1, QtCore.Qt.AlignHCenter)
 
-        self.label_motorbike = QtWidgets.QLabel(self.groupBox_count)
-        self.label_motorbike.setObjectName("label_motorbike")
-        self.gridLayout_count.addWidget(self.label_motorbike, 3, 1, 1, 1, QtCore.Qt.AlignHCenter)
+        self.label_motorcycle = QtWidgets.QLabel(self.groupBox_count)
+        self.label_motorcycle.setObjectName("label_motorcycle")
+        self.gridLayout_count.addWidget(self.label_motorcycle, 3, 1, 1, 1, QtCore.Qt.AlignHCenter)
 
         self.label_bus = QtWidgets.QLabel(self.groupBox_count)
         self.label_bus.setObjectName("label_bus")
@@ -205,7 +205,7 @@ class Ui_mainWindow(object):
         self.label_5.setText(_translate("mainWindow", "卡车"))
         self.label_6.setText(_translate("mainWindow", "摩托车"))
 
-        self.label_motorbike.setText(_translate("mainWindow", "0"))
+        self.label_motorcycle.setText(_translate("mainWindow", "0"))
         self.label_bus.setText(_translate("mainWindow", "0"))
         self.label_bicycle.setText(_translate("mainWindow", "0"))
         self.label_12.setText(_translate("mainWindow", "总共"))
