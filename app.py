@@ -7,7 +7,6 @@ from gui import *
 import copy
 from counter import CounterThread
 from utils.sort import *
-from model import *
 from utils.utils import *
 from utils.datasets import *
 
@@ -224,7 +223,7 @@ class App(QMainWindow,Ui_mainWindow):
                 label_sum_var = vars(self)[f"label_sum"]
                 label_sum_var.setText(str(int(label_sum_var.text()) + 1)) #总数
                 label_sum_var.repaint()
-                f.writelines('  '.join(map(lambda x: str(x),result))+"\t"+str(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime())))  #打印结果
+                f.writelines(str(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime()))+'  '+'  '.join(map(lambda x: str(x),result))+"\t")  #打印结果
                 f.write(("\n"))
         # print("************************************************",len(counter_results))
 

@@ -9,11 +9,6 @@ def locate_and_correct(img_src, img_mask):
     :param img_mask: 通过u_net进行图像分隔得到的二值化图片，车牌区域呈现白色，背景区域为黑色
     :return: 定位且矫正后的车牌
     """
-    # cv2.imshow('img_mask',img_mask)
-    # cv2.waitKey(0)
-    # ret,thresh = cv2.threshold(img_mask[:,:,0],0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU) #二值化
-    # cv2.imshow('thresh',thresh)
-    # cv2.waitKey(0)
     contours, hierarchy = cv2.findContours(img_mask[:, :, 0], cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if not len(contours):  # contours1长度为0说明未检测到车牌
         # print("未检测到车牌")
@@ -24,18 +19,10 @@ def locate_and_correct(img_src, img_mask):
         for ii, cont in enumerate(contours):
             x, y, w, h = cv2.boundingRect(cont)  # 获取最小外接矩形
             img_cut_mask = img_mask[y:y + h, x:x + w]  # 将标签车牌区域截取出来
-            # cv2.imshow('img_cut_mask',img_cut_mask)
-            # cv2.waitKey(0)
-            # print('w,h,均值,宽高比',w,h,np.mean(img_cut_mask),w/h)
-            # contours中除了车牌区域可能会有宽或高都是1或者2这样的小噪点，
             # 而待选车牌区域的均值应较高，且宽和高不会非常小，因此通过以下条件进行筛选
             if np.mean(img_cut_mask) >= 75 and w > 15 and h > 15:
                 rect = cv2.minAreaRect(cont)  # 针对坐标点获取带方向角的最小外接矩形，中心点坐标，宽高，旋转角度
                 box = cv2.boxPoints(rect).astype(np.int32)  # 获取最小外接矩形四个顶点坐标
-                # cv2.drawContours(img_mask, contours, -1, (0, 0, 255), 2)
-                # cv2.drawContours(img_mask, [box], 0, (0, 255, 0), 2)
-                # cv2.imshow('img_mask',img_mask)
-                # cv2.waitKey(0)
                 cont = cont.reshape(-1, 2).tolist()
                 # 由于转换矩阵的两组坐标位置需要一一对应，因此需要将最小外接矩形的坐标进行排序，最终排序为[左上，左下，右上，右下]
                 box = sorted(box, key=lambda xy: xy[0])  # 先按照左右进行排序，分为左侧的坐标和右侧的坐标
@@ -85,24 +72,17 @@ def locate_and_correct(img_src, img_mask):
                         d3 = weight * d_down + (1 - weight) * dis3
                         l3 = (x, y)
 
-                # print([l0,l1,l2,l3])
-                # for l in [l0, l1, l2, l3]:
-                #     cv2.circle(img=img_mask, color=(0, 255, 255), center=tuple(l), thickness=2, radius=2)
-                # cv2.imshow('img_mask',img_mask)
-                # cv2.waitKey(0)
                 p0 = np.float32([l0, l1, l2, l3])  # 左上角，左下角，右上角，右下角，p0和p1中的坐标顺序对应，以进行转换矩阵的形成
                 p1 = np.float32([(0, 0), (0, 80), (240, 0), (240, 80)])  # 我们所需的长方形
                 transform_mat = cv2.getPerspectiveTransform(p0, p1)  # 构成转换矩阵
                 lic = cv2.warpPerspective(img_src, transform_mat, (240, 80))  # 进行车牌矫正
-                # cv2.imshow('lic',lic)
-                # cv2.waitKey(0)
+
                 Lic_img.append(lic)
                 cv2.drawContours(img_src_copy, [np.array([l0, l1, l3, l2])], -1, (0, 255, 0), 2)  # 在img_src_copy上绘制出定位的车牌轮廓，(0, 255, 0)表示绘制线条为绿色
     return img_src_copy, Lic_img
 
 def unet_predict(unet, img_src_path):
     img_src = img_src_path #cv2.imdecode(np.fromfile(img_src_path, dtype=np.uint8), -1)  # 从中文路径读取时用
-    # img_src=cv2.imread(img_src_path)
     if img_src.shape != (512, 512, 3):
         img_src = cv2.resize(img_src, dsize=(512, 512), interpolation=cv2.INTER_AREA)[:, :, :3]  # dsize=(宽度,高度),[:,:,:3]是防止图片为4通道图片，后续无法reshape
     img_src = img_src.reshape(1, 512, 512, 3)  # 预测图片shape为(1,512,512,3)

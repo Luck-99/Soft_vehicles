@@ -14,10 +14,8 @@ import torch
 from PIL import Image, ExifTags
 from torch.utils.data import Dataset
 from tqdm import tqdm
-
 from utils.util import xyxy2xywh, xywh2xyxy
 
-help_url = 'https://github.com/ultralytics/yolov5/wiki/Train-Custom-Data'
 img_formats = ['.bmp', '.jpg', '.jpeg', '.png', '.tif', '.dng']
 vid_formats = ['.mov', '.avi', '.mp4']
 
@@ -122,28 +120,7 @@ class LoadImages:  # for inference
 class Load_Images:  # for inference
     def __init__(self, path, img_size=416):
         self.path=path
-        # path = str(Path(path))  # os-agnostic
-        # files = []
-        # if os.path.isdir(path):
-        #     files = sorted(glob.glob(os.path.join(path, '*.*')))
-        # elif os.path.isfile(path):
-        #     files = [path]
-        #
-        # images = [x for x in files if os.path.splitext(x)[-1].lower() in img_formats]
-        # videos = [x for x in files if os.path.splitext(x)[-1].lower() in vid_formats]
-        # nI, nV = len(images), len(videos)
-
         self.img_size = img_size
-
-        # self.files = images + videos
-        # self.nF = nI + nV  # number of files
-        # self.video_flag = [False] * nI + [True] * nV
-        # self.mode = 'images'
-        # if any(videos):
-        #     self.new_video(videos[0])  # new video
-        # else:
-        #     self.cap = None
-        # assert self.nF > 0, 'No images or videos found in ' + path
 
     def __iter__(self):
         self.count = 0
@@ -155,57 +132,6 @@ class Load_Images:  # for inference
         img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
         img = np.ascontiguousarray(img)
         return img, img0
-        # if self.count == self.nF:
-        #     raise StopIteration
-        # path = self.files[self.count]
-
-        # if self.video_flag[self.count]:
-            # Read video
-            # self.mode = 'video'
-            # ret_val, img0 = self.cap.read()
-            # if not ret_val:
-            #     print('not ret_val')
-            #     self.count += 1
-            #     self.cap.release()
-            #     if self.count == self.nF:  # last video
-            #         raise StopIteration
-            #     else:
-            #         path = self.files[self.count]
-            #         self.new_video(path)
-            #         ret_val, img0 = self.cap.read()
-
-            # self.frame += 1
-            # print('video %g/%g (%g/%g) %s: ' % (self.count + 1, self.nF, self.frame, self.nframes, path), end='')
-
-        # else:
-            # Read image
-
-        # print('ret_val')
-        # self.count += 1
-        # img0 = cv2.imread(path)  # BGR
-        # img0 = self.path
-        # assert img0 is not None, 'Image Not Found ' + self.path
-        # print('image %g/%g %s: ' % (self.count, self.nF, self.path), end='')
-        # Padded resize
-        # img = letterbox(img0, new_shape=self.img_size)[0]
-
-
-        # Convert
-        # img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
-        # img = np.ascontiguousarray(img)
-        # return img, img0
-
-        # cv2.imwrite(path + '.letterbox.jpg', 255 * img.transpose((1, 2, 0))[:, :, ::-1])  # save letterbox image
-        # return img, img0
-
-    # def new_video(self, path):
-    #     self.frame = 0
-    #     self.cap = cv2.VideoCapture(path)
-    #     self.nframes = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
-
-    # def __len__(self):
-    #     return self.nF  # number of files
-
 
 class LoadWebcam:  # for inference
     def __init__(self, pipe=0, img_size=416):
@@ -213,17 +139,6 @@ class LoadWebcam:  # for inference
 
         if pipe == '0':
             pipe = 0  # local camera
-        # pipe = 'rtsp://192.168.1.64/1'  # IP camera
-        # pipe = 'rtsp://username:password@192.168.1.64/1'  # IP camera with login
-        # pipe = 'rtsp://170.93.143.139/rtplive/470011e600ef003a004ee33696235daa'  # IP traffic camera
-        # pipe = 'http://wmccpinetop.axiscam.net/mjpg/video.mjpg'  # IP golf camera
-
-        # https://answers.opencv.org/question/215996/changing-gstreamer-pipeline-to-opencv-in-pythonsolved/
-        # pipe = '"rtspsrc location="rtsp://username:password@192.168.1.64/1" latency=10 ! appsink'  # GStreamer
-
-        # https://answers.opencv.org/question/200787/video-acceleration-gstremer-pipeline-in-videocapture/
-        # https://stackoverflow.com/questions/54095699/install-gstreamer-support-for-opencv-python-package  # install help
-        # pipe = "rtspsrc location=rtsp://root:root@192.168.0.91:554/axis-media/media.amp?videocodec=h264&resolution=3840x2160 protocols=GST_RTSP_LOWER_TRANS_TCP ! rtph264depay ! queue ! vaapih264dec ! videoconvert ! appsink"  # GStreamer
 
         self.pipe = pipe
         self.cap = cv2.VideoCapture(pipe)  # video capture object
@@ -504,7 +419,6 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
                 gb += self.imgs[i].nbytes
                 pbar.desc = 'Caching images (%.1fGB)' % (gb / 1E9)
 
-        # Detect corrupted images https://medium.com/joelthchao/programmatically-detect-corrupted-image-8c1b2006c3d3
         detect_corrupted_images = False
         if detect_corrupted_images:
             from skimage import io  # conda install -c conda-forge scikit-image
@@ -517,11 +431,6 @@ class LoadImagesAndLabels(Dataset):  # for training/testing
     def __len__(self):
         return len(self.img_files)
 
-    # def __iter__(self):
-    #     self.count = -1
-    #     print('ran dataset iter')
-    #     #self.shuffled_vector = np.random.permutation(self.nF) if self.augment else np.arange(self.nF)
-    #     return self
 
     def __getitem__(self, index):
         if self.image_weights:
@@ -641,11 +550,6 @@ def augment_hsv(img, hgain=0.5, sgain=0.5, vgain=0.5):
     img_hsv = cv2.merge((cv2.LUT(hue, lut_hue), cv2.LUT(sat, lut_sat), cv2.LUT(val, lut_val))).astype(dtype)
     cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR, dst=img)  # no return needed
 
-    # Histogram equalization
-    # if random.random() < 0.2:
-    #     for i in range(3):
-    #         img[:, :, i] = cv2.equalizeHist(img[:, :, i])
-
 
 def load_mosaic(self, index):
     # loads images in a mosaic
@@ -739,10 +643,6 @@ def letterbox(img, new_shape=(416, 416), color=(114, 114, 114), auto=True, scale
 
 
 def random_affine(img, targets=(), degrees=10, translate=.1, scale=.1, shear=10, border=0):
-    # torchvision.transforms.RandomAffine(degrees=(-10, 10), translate=(.1, .1), scale=(.9, 1.1), shear=(-10, 10))
-    # https://medium.com/uruvideo/dataset-augmentation-with-random-homographies-a8f4b44830d4
-    # targets = [cls, xyxy]
-
     height = img.shape[0] + border * 2
     width = img.shape[1] + border * 2
 
@@ -782,15 +682,6 @@ def random_affine(img, targets=(), degrees=10, translate=.1, scale=.1, shear=10,
         y = xy[:, [1, 3, 5, 7]]
         xy = np.concatenate((x.min(1), y.min(1), x.max(1), y.max(1))).reshape(4, n).T
 
-        # # apply angle-based reduction of bounding boxes
-        # radians = a * math.pi / 180
-        # reduction = max(abs(math.sin(radians)), abs(math.cos(radians))) ** 0.5
-        # x = (xy[:, 2] + xy[:, 0]) / 2
-        # y = (xy[:, 3] + xy[:, 1]) / 2
-        # w = (xy[:, 2] - xy[:, 0]) * reduction
-        # h = (xy[:, 3] - xy[:, 1]) * reduction
-        # xy = np.concatenate((x - w / 2, y - h / 2, x + w / 2, y + h / 2)).reshape(4, n).T
-
         # reject warped points outside of image
         xy[:, [0, 2]] = xy[:, [0, 2]].clip(0, width)
         xy[:, [1, 3]] = xy[:, [1, 3]].clip(0, height)
@@ -808,9 +699,6 @@ def random_affine(img, targets=(), degrees=10, translate=.1, scale=.1, shear=10,
 
 
 def cutout(image, labels):
-    # https://arxiv.org/abs/1708.04552
-    # https://github.com/hysts/pytorch_cutout/blob/master/dataloader.py
-    # https://towardsdatascience.com/when-conventional-wisdom-fails-revisiting-data-augmentation-for-self-driving-cars-4831998c5509
     h, w = image.shape[:2]
 
     def bbox_ioa(box1, box2):
@@ -883,7 +771,6 @@ def convert_images2bmp():  # from utils.datasets import *; convert_images2bmp()
                 cv2.imwrite(f.replace(ext.lower(), '.bmp').replace(path, path + 'bmp'), cv2.imread(f))
 
     # Save labels
-    # for path in ['../coco/trainvalno5k.txt', '../coco/5k.txt']:
     for file in ['../data/sm4/out_train.txt', '../data/sm4/out_test.txt']:
         with open(file, 'r') as f:
             lines = f.read()

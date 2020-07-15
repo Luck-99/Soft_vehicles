@@ -12,7 +12,6 @@ import torch.nn.functional as F
 def init_seeds(seed=0):
     torch.manual_seed(seed)
 
-    # Speed-reproducibility tradeoff https://pytorch.org/docs/stable/notes/randomness.html
     if seed == 0:  # slower, more reproducible
         cudnn.deterministic = True
         cudnn.benchmark = False

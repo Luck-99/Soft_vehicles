@@ -70,7 +70,7 @@ class CounterThread(QThread):
         for video in self.videoList:
             self.last_max_id = 0
             cap = cv2.VideoCapture(video)
-            #out = cv2.VideoWriter(os.path.join(self.save_dir,video.split("/")[-1]), cv2.VideoWriter_fourcc('X', 'V', 'I', 'D'), 10, (1920, 1080))  #设置输出格式
+            out = cv2.VideoWriter(os.path.join(self.save_dir,video.split("/")[-1]), cv2.VideoWriter_fourcc('X', 'V', 'I', 'D'), 10, (1920, 1080))  #设置输出格式
             frame_count = 0
 
             while cap.isOpened():
@@ -85,7 +85,7 @@ class CounterThread(QThread):
                                 a1 = time.time()
                                 frame = self.counter(self.permission, self.colorDict, frame,np.array(self.countArea), self.mot_tracker, video)
                                 self.sin_counterResult.emit(frame)
-                                #out.write(frame)  #输出视频到文件
+                                out.write(frame)  #输出视频到文件
                                 a2 = time.time()
                                 print(f"fps: {1 / (a2 - a1):.2f}")
                             frame_count += 1
@@ -99,7 +99,7 @@ class CounterThread(QThread):
             #restart count for each video
             KalmanBoxTracker.count = 0
             cap.release()
-            #out.release()
+            out.release()
 
             if not self.running_flag:
                 break
@@ -124,14 +124,6 @@ class CounterThread(QThread):
     def display(self, car_pic):
         img_src = car_pic
         h, w = img_src.shape[0], img_src.shape[1]
-        '''
-        if h * w <= 240 * 80 and 2 <= w / h <= 5:  # 满足该条件说明可能整个图片就是一张车牌,无需定位,直接识别即可
-            lic = cv2.resize(img_src, dsize=(240, 80), interpolation=cv2.INTER_AREA)[:, :, :3]  # 直接resize为(240,80)
-            img_src_copy, Lic_img = img_src, [lic]
-        else:  # 否则就需通过unet对img_src原图预测,得到img_mask,实现车牌定位,然后进行识别
-            img_src, img_mask = unet_predict(self.unet, img_src)
-            img_src_copy, Lic_img = locate_and_correct(img_src, img_mask)  # 利用core.py中的locate_and_correct函数进行车牌定位和矫正
-        '''
         img_src, img_mask = unet_predict(self.unet, img_src)
         img_src_copy, Lic_img = locate_and_correct(img_src, img_mask)  # 利用core.py中的locate_and_correct函数进行车牌定位和矫正
 

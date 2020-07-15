@@ -6,7 +6,6 @@ from models.experimental import *
 
 import utils.torch_utils as torch_utils
 
-
 class Detect(nn.Module):
     def __init__(self, nc=80, anchors=()):  # detection layer
         super(Detect, self).__init__()
@@ -164,22 +163,7 @@ def parse_model(md, ch):  # model_dict, input_channels(3)
         if m in [nn.Conv2d, Conv, Bottleneck, SPP, DWConv, MixConv2d, Focus, ConvPlus, BottleneckCSP]:
             c1, c2 = ch[f], args[0]
 
-            # Normal
-            # if i > 0 and args[0] != no:  # channel expansion factor
-            #     ex = 1.75  # exponential (default 2.0)
-            #     e = math.log(c2 / ch[1]) / math.log(2)
-            #     c2 = int(ch[1] * ex ** e)
-            # if m != Focus:
             c2 = make_divisible(c2 * gw, 8) if c2 != no else c2
-
-            # Experimental
-            # if i > 0 and args[0] != no:  # channel expansion factor
-            #     ex = 1 + gw  # exponential (default 2.0)
-            #     ch1 = 32  # ch[1]
-            #     e = math.log(c2 / ch1) / math.log(2)  # level 1-n
-            #     c2 = int(ch1 * ex ** e)
-            # if m != Focus:
-            #     c2 = make_divisible(c2, 8) if c2 != no else c2
 
             args = [c1, c2, *args[1:]]
             if m is BottleneckCSP:
@@ -203,32 +187,3 @@ def parse_model(md, ch):  # model_dict, input_channels(3)
         layers.append(m_)
         ch.append(c2)
     return nn.Sequential(*layers), sorted(save)
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--cfg', type=str, default='yolov5s.yaml', help='model.yaml')
-    parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    opt = parser.parse_args()
-    opt.cfg = glob.glob('./**/' + opt.cfg, recursive=True)[0]  # find file
-    device = torch_utils.select_device(opt.device)
-
-    # Create model
-    model = Model(opt.cfg).to(device)
-    model.train()
-
-    # Profile
-    # img = torch.rand(8 if torch.cuda.is_available() else 1, 3, 640, 640).to(device)
-    # y = model(img, profile=True)
-    # print([y[0].shape] + [x.shape for x in y[1]])
-
-    # ONNX export
-    # model.model[-1].export = True
-    # torch.onnx.export(model, img, f.replace('.yaml', '.onnx'), verbose=True, opset_version=11)
-
-    # Tensorboard
-    # from torch.utils.tensorboard import SummaryWriter
-    # tb_writer = SummaryWriter()
-    # print("Run 'tensorboard --logdir=models/runs' to view tensorboard at http://localhost:6006/")
-    # tb_writer.add_graph(model.model, img)  # add model to tensorboard
-    # tb_writer.add_image('test', img[0], dataformats='CWH')  # add model to tensorboard

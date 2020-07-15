@@ -19,7 +19,7 @@ import torchvision
 from scipy.signal import butter, filtfilt
 from tqdm import tqdm
 
-from . import torch_utils, google_utils  #  torch_utils, google_utils
+from . import torch_utils #  torch_utils
 
 # Set printoptions
 torch.set_printoptions(linewidth=320, precision=5, profile='long')
@@ -190,17 +190,6 @@ def ap_per_class(tp, conf, pred_cls, target_cls):
             for j in range(tp.shape[1]):
                 ap[ci, j] = compute_ap(recall[:, j], precision[:, j])
 
-            # Plot
-            # fig, ax = plt.subplots(1, 1, figsize=(5, 5))
-            # ax.plot(recall, precision)
-            # ax.set_xlabel('Recall')
-            # ax.set_ylabel('Precision')
-            # ax.set_xlim(0, 1.01)
-            # ax.set_ylim(0, 1.01)
-            # fig.tight_layout()
-            # fig.savefig('PR_curve.png', dpi=300)
-
-    # Compute F1 score (harmonic mean of precision and recall)
     f1 = 2 * p * r / (p + r + 1e-16)
 
     return p, r, ap, f1, unique_classes.astype('int32')
@@ -329,7 +318,6 @@ class FocalLoss(nn.Module):
         # p_t = torch.exp(-loss)
         # loss *= self.alpha * (1.000001 - p_t) ** self.gamma  # non-zero power for gradient stability
 
-        # TF implementation https://github.com/tensorflow/addons/blob/v0.7.1/tensorflow_addons/losses/focal_loss.py
         pred_prob = torch.sigmoid(pred)  # prob from logits
         p_t = true * pred_prob + (1 - true) * (1 - pred_prob)
         alpha_factor = true * self.alpha + (1 - true) * (1 - self.alpha)
@@ -344,7 +332,7 @@ class FocalLoss(nn.Module):
             return loss
 
 
-def smooth_BCE(eps=0.1):  # https://github.com/ultralytics/yolov3/issues/238#issuecomment-598028441
+def smooth_BCE(eps=0.1):
     # return positive, negative label smoothing BCE targets
     return 1.0 - 0.5 * eps, 0.5 * eps
 
@@ -360,7 +348,6 @@ def compute_loss(p, targets, model):  # predictions, targets, model
     BCEcls = nn.BCEWithLogitsLoss(pos_weight=ft([h['cls_pw']]), reduction=red)
     BCEobj = nn.BCEWithLogitsLoss(pos_weight=ft([h['obj_pw']]), reduction=red)
 
-    # class label smoothing https://arxiv.org/pdf/1902.04103.pdf eqn 3
     cp, cn = smooth_BCE(eps=0.0)
 
     # focal loss
@@ -394,10 +381,6 @@ def compute_loss(p, targets, model):  # predictions, targets, model
                 t = torch.full_like(ps[:, 5:], cn)  # targets
                 t[range(nb), tcls[i]] = cp
                 lcls += BCEcls(ps[:, 5:], t)  # BCE
-
-            # Append targets to text file
-            # with open('targets.txt', 'a') as file:
-            #     [file.write('%11.5g ' * 4 % tuple(x) + '\n') for x in torch.cat((txy[i], twh[i]), 1)]
 
         lobj += BCEobj(pi[..., 4], tobj)  # obj loss
 
@@ -522,17 +505,10 @@ def non_max_suppression(prediction, conf_thres=0.1, iou_thres=0.6, fast=False, c
         if classes:
             x = x[(x[:, 5:6] == torch.tensor(classes, device=x.device)).any(1)]
 
-        # Apply finite constraint
-        # if not torch.isfinite(x).all():
-        #     x = x[torch.isfinite(x).all(1)]
-
         # If none remain process next image
         n = x.shape[0]  # number of boxes
         if not n:
             continue
-
-        # Sort by confidence
-        # x = x[x[:, 4].argsort(descending=True)]
 
         # Batched NMS
         c = x[:, 5:6] * (0 if agnostic else max_wh)  # classes
@@ -547,7 +523,7 @@ def non_max_suppression(prediction, conf_thres=0.1, iou_thres=0.6, fast=False, c
                 x[i, :4] = torch.mm(weights, x[:, :4]).float() / weights.sum(1, keepdim=True)  # merged boxes
                 if redundant:
                     i = i[iou.sum(1) > 1]  # require redundancy
-            except:  # possible CUDA error https://github.com/ultralytics/yolov3/issues/1139
+            except:
                 print(x, i, x.shape, i.shape)
                 pass
 
@@ -648,11 +624,6 @@ def coco_single_class_labels(path='../coco/labels/train2014/', label_class=43):
 
 
 def kmean_anchors(path='./data/coco128.txt', n=9, img_size=(640, 640), thr=0.20, gen=1000):
-    # Creates kmeans anchors for use in *.cfg files: from utils.utils import *; _ = kmean_anchors()
-    # n: number of anchors
-    # img_size: (min, max) image size used for multi-scale training (can be same values)
-    # thr: IoU threshold hyperparameter used for training (0.0 - 1.0)
-    # gen: generations to evolve anchors using genetic algorithm
     from utils.datasets import LoadImagesAndLabels
 
     def print_results(k):
@@ -661,11 +632,6 @@ def kmean_anchors(path='./data/coco128.txt', n=9, img_size=(640, 640), thr=0.20,
         max_iou = iou.max(1)[0]
         bpr, aat = (max_iou > thr).float().mean(), (iou > thr).float().mean() * n  # best possible recall, anch > thr
 
-        # thr = 5.0
-        # r = wh[:, None] / k[None]
-        # ar = torch.max(r, 1. / r).max(2)[0]
-        # max_ar = ar.min(1)[0]
-        # bpr, aat = (max_ar < thr).float().mean(), (ar < thr).float().mean() * n  # best possible recall, anch > thr
 
         print('%.2f iou_thr: %.3f best possible recall, %.2f anchors > thr' % (thr, bpr, aat))
         print('n=%g, img_size=%s, IoU_all=%.3f/%.3f-mean/best, IoU>thr=%.3f-mean: ' %
@@ -678,13 +644,6 @@ def kmean_anchors(path='./data/coco128.txt', n=9, img_size=(640, 640), thr=0.20,
         iou = wh_iou(wh, torch.Tensor(k))  # iou
         max_iou = iou.max(1)[0]
         return (max_iou * (max_iou > thr).float()).mean()  # product
-
-    # def fitness_ratio(k):  # mutation fitness
-    #     # wh(5316,2), k(9,2)
-    #     r = wh[:, None] / k[None]
-    #     x = torch.max(r, 1. / r).max(2)[0]
-    #     m = x.min(1)[0]
-    #     return 1. / (m * (m < 5).float()).mean()  # product
 
     # Get label wh
     wh = []
@@ -705,19 +664,6 @@ def kmean_anchors(path='./data/coco128.txt', n=9, img_size=(640, 640), thr=0.20,
     k *= s
     wh = torch.Tensor(wh)
     k = print_results(k)
-
-    # # Plot
-    # k, d = [None] * 20, [None] * 20
-    # for i in tqdm(range(1, 21)):
-    #     k[i-1], d[i-1] = kmeans(wh / s, i)  # points, mean distance
-    # fig, ax = plt.subplots(1, 2, figsize=(14, 7))
-    # ax = ax.ravel()
-    # ax[0].plot(np.arange(1, 21), np.array(d) ** 2, marker='.')
-    # fig, ax = plt.subplots(1, 2, figsize=(14, 7))  # plot wh
-    # ax[0].hist(wh[wh[:, 0]<100, 0],400)
-    # ax[1].hist(wh[wh[:, 1]<100, 1],400)
-    # fig.tight_layout()
-    # fig.savefig('wh.png', dpi=200)
 
     # Evolve
     npr = np.random
@@ -823,7 +769,6 @@ def output_to_target(output, width, height):
 
 # Plotting functions ---------------------------------------------------------------------------------------------------
 def butter_lowpass_filtfilt(data, cutoff=1500, fs=50000, order=5):
-    # https://stackoverflow.com/questions/28536191/how-to-filter-smooth-with-scipy-numpy
     def butter_lowpass(cutoff, fs, order):
         nyq = 0.5 * fs
         normal_cutoff = cutoff / nyq
@@ -848,9 +793,7 @@ def plot_one_box(x, img, color=None, label=None, line_thickness=None):
         cv2.putText(img, label, (c1[0], c1[1] - 2), 0, tl / 3, [225, 255, 255], thickness=tf, lineType=cv2.LINE_AA)
 
 
-def plot_wh_methods():  # from utils.utils import *; plot_wh_methods()
-    # Compares the two methods for width-height anchor multiplication
-    # https://github.com/ultralytics/yolov3/issues/168
+def plot_wh_methods():
     x = np.arange(-4.0, 4.0, .1)
     ya = np.exp(x)
     yb = torch.sigmoid(torch.from_numpy(x)).numpy() * 2
@@ -899,7 +842,6 @@ def plot_images(images, targets, paths=None, fname='images.jpg', names=None, max
 
     # Fix class - colour map
     prop_cycle = plt.rcParams['axes.prop_cycle']
-    # https://stackoverflow.com/questions/51350872/python-from-color-name-to-rgb
     hex2rgb = lambda h: tuple(int(h[1 + i:1 + i + 2], 16) for i in (0, 2, 4))
     color_lut = [hex2rgb(h) for h in prop_cycle.by_key()['color']]
 
@@ -1095,7 +1037,6 @@ def plot_results_overlay(start=0, stop=0):  # from utils.utils import *; plot_re
 
 
 def plot_results(start=0, stop=0, bucket='', id=(), labels=()):  # from utils.utils import *; plot_results()
-    # Plot training 'results*.txt' as seen in https://github.com/ultralytics/yolov5#reproduce-our-training
     fig, ax = plt.subplots(2, 5, figsize=(12, 6))
     ax = ax.ravel()
     s = ['GIoU', 'Objectness', 'Classification', 'Precision', 'Recall',
@@ -1113,13 +1054,10 @@ def plot_results(start=0, stop=0, bucket='', id=(), labels=()):  # from utils.ut
             for i in range(10):
                 y = results[i, x]
                 if i in [0, 1, 2, 5, 6, 7]:
-                    y[y == 0] = np.nan  # dont show zero loss values
-                    # y /= y[0]  # normalize
+                    y[y == 0] = np.nan
                 label = labels[fi] if len(labels) else Path(f).stem
                 ax[i].plot(x, y, marker='.', label=label, linewidth=2, markersize=8)
                 ax[i].set_title(s[i])
-                # if i in [5, 6, 7]:  # share train and val loss y axes
-                #     ax[i].get_shared_y_axes().join(ax[i], ax[i - 5])
         except:
             print('Warning: Plotting error for %s, skipping file' % f)
 

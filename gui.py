@@ -1,14 +1,4 @@
-# -*- coding: utf-8 -*-
-
-# Form implementation generated from reading ui file 'gui.ui'
-#
-# Created by: PyQt5 UI code generator 5.13.1
-#
-# WARNING! All changes made in this file will be lost!
-
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
@@ -136,23 +126,7 @@ class Ui_mainWindow(object):
         self.label_color.setObjectName("label_color")
         self.gridLayout_plate.addWidget(self.label_color, 2, 4, 1, 1, QtCore.Qt.AlignCenter)
 
-
-
         self.verticalLayout_3.addLayout(self.gridLayout_plate)
-
-        # self.label_plate = QtWidgets.QLabel(self.centralwidget)
-        # self.label_plate.setGeometry(QtCore.QRect(1470,270,320,80))
-        # self.label_plate.setAlignment(QtCore.Qt.AlignCenter)
-        # self.label_plate.setStyleSheet("background-color: rgb(233, 185, 110);")
-        # self.label_plate.setObjectName("label_plate")
-        #
-        # self.label_plate = QtWidgets.QLabel(self.centralwidget)
-        # self.label_plate.setGeometry(QtCore.QRect(1470, 360, 320, 50))
-        # self.label_plate.setAlignment(QtCore.Qt.AlignCenter)
-        # self.label_plate.setStyleSheet("background-color: rgb(233, 185, 110);")
-        # self.label_plate.setObjectName("label_plate")
-        # self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.widget)
-        # self.verticalLayout_3.addLayout(self.label_plate)
 
         self.widget = QtWidgets.QGroupBox(self.centralwidget)
         self.widget.setGeometry(QtCore.QRect(1470, 735, 320, 80))
